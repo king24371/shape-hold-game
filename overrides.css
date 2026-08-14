@@ -1,0 +1,53 @@
+.play-area {
+  grid-template-columns: 1fr;
+  place-items: center;
+}
+
+.instruction {
+  position: absolute;
+  left: 5vw;
+  top: 6vh;
+  max-width: 330px;
+  z-index: 2;
+}
+
+.stage-wrap {
+  justify-self: center;
+}
+
+.stage.exploding .shape-mark.asset {
+  animation: shape-explode .72s cubic-bezier(.16,.8,.3,1) forwards;
+}
+
+.stage.exploding::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle,#fff 0 10%,#ffe4a3 11% 30%,#c9653c 31% 55%,transparent 56%);
+  animation: burst .72s ease-out forwards;
+}
+
+@keyframes shape-explode {
+  35% { filter: brightness(1.7); transform: translate(-50%,-50%) scale(1.18); }
+  100% { opacity: 0; filter: blur(10px); transform: translate(-50%,-50%) scale(2.2) rotate(16deg); }
+}
+
+@keyframes burst {
+  0% { opacity: 1; transform: translate(-50%,-50%) scale(.2); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(12); box-shadow: 0 0 0 34px rgba(201,101,60,0); }
+}
+
+@media (max-width: 800px) {
+  .instruction {
+    position: relative;
+    left: auto;
+    top: auto;
+    max-width: 430px;
+  }
+}
+
