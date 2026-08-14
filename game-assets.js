@@ -1,5 +1,9 @@
 /** 素材接口：替換同名檔案，或在 circleVariants 新增素材即可。 */
 window.GAME_ASSETS = {
+  background: {
+    tag: "background",
+    apiUrl: "https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=100"
+  },
   doubleCircle: { image: "assets/Boobs.png", loop: "audio/loop/oppai-loop.mp3" },
   circleVariants: [
     { id: "boob", image: "assets/Circle/Boob.png", loop: "audio/loop/oppai-loop.mp3" },

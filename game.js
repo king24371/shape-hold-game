@@ -2,12 +2,25 @@
   const TARGETS = [.72,.84,.96,1.08,1.2,1.32,1.44,1.56];
   const START = .42;
   const $ = (id) => document.getElementById(id);
-  const ui = { score:$("score"), round:$("round"), headline:$("headline"), description:$("description"), panel:$("gamePanel"), target:$("targetShape"), player:$("playerShape"), hold:$("holdZone"), card:$("statusCard"), title:$("statusTitle"), sub:$("statusSub"), final:$("finalCard"), finalScore:$("finalScore"), finalCopy:$("finalCopy"), restart:$("restart") };
+  const ui = { score:$("score"), round:$("round"), headline:$("headline"), description:$("description"), panel:$("gamePanel"), target:$("targetShape"), player:$("playerShape"), hold:$("holdZone"), card:$("statusCard"), title:$("statusTitle"), sub:$("statusSub"), final:$("finalCard"), finalScore:$("finalScore"), finalCopy:$("finalCopy"), restart:$("restart"), background:$("webBackground") };
   const assets = window.GAME_ASSETS;
   const audio = { loop:null, success:assets.successSounds.map(path=>new Audio(path)), failure:assets.failureSound?new Audio(assets.failureSound):null };
   let phase="ready", outcome=null, failureReason=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0, currentAsset=assets.circleVariants[0], lastCircle=-1;
 
   function sound(name) { const a=name==="success"?audio.success[Math.floor(Math.random()*audio.success.length)]:audio.failure; if(!a)return; a.currentTime=0; a.play().catch(()=>{}); }
+  async function loadBackground(){
+    const config=assets.background;
+    try{
+      const response=await fetch(`${config.apiUrl}&tags=${encodeURIComponent(config.tag)}`);
+      if(!response.ok)throw new Error(`HTTP ${response.status}`);
+      const posts=await response.json();
+      const candidates=posts.filter(post=>post.sample_url||post.file_url||post.preview_url);
+      if(!candidates.length)return;
+      const post=candidates[Math.floor(Math.random()*candidates.length)];
+      ui.background.style.backgroundImage=`url("${post.sample_url||post.file_url||post.preview_url}")`;
+      ui.background.closest(".play-area").classList.add("has-background");
+    }catch(error){console.warn("背景圖片載入失敗，使用預設背景。",error);}
+  }
   function stopLoop(){ cancelAnimationFrame(frame); frame=null; if(audio.loop){audio.loop.pause();audio.loop.currentTime=0;} }
   function shapeMarkup(kind){ return kind==="circle" ? '<span class="disc"></span>' : '<span class="ring left"></span><span class="ring right"></span>'; }
   function setShape(kind, asset){
@@ -51,10 +64,10 @@
     ui.description.textContent=`你完成了 ${cleared} 個逐漸放大的目標。`;
     ui.finalCopy.textContent=outcome==="failure"?`止步第 ${round} 關，共完成 ${cleared} 關。`:"八個逐漸放大的圖形，全數完成。";
   }
-  function restart(){stopLoop();clearTimeout(timer);score=0;ui.score.textContent="0";ui.panel.hidden=false;ui.final.hidden=true;ui.headline.textContent="憑感覺，剛剛好。";ui.description.textContent="每關目標會越來越大。按住圖形讓它成長，在最接近外框時放開。";prepare(1);}
+  function restart(){stopLoop();clearTimeout(timer);score=0;ui.score.textContent="0";ui.panel.hidden=false;ui.final.hidden=true;ui.headline.textContent="憑感覺，剛剛好。";ui.description.textContent="每關目標會越來越大。按住圖形讓它成長，在最接近外框時放開。";loadBackground();prepare(1);}
   ui.hold.addEventListener("pointerdown",e=>{ui.hold.setPointerCapture(e.pointerId);begin();});
   ui.hold.addEventListener("pointerup",release);ui.hold.addEventListener("pointercancel",release);
   addEventListener("keydown",e=>{if((e.code==="Space"||e.code==="Enter")&&!e.repeat){e.preventDefault();begin();}});
   addEventListener("keyup",e=>{if(e.code==="Space"||e.code==="Enter")release();});
-  ui.restart.addEventListener("click",restart);prepare(1);
+  ui.restart.addEventListener("click",restart);loadBackground();prepare(1);
 })();

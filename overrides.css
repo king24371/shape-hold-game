@@ -3,6 +3,24 @@
   place-items: center;
 }
 
+.web-background {
+  position: absolute;
+  inset: 0;
+  z-index: -4;
+  background-position: center;
+  background-size: cover;
+  opacity: 0;
+  transition: opacity .45s ease;
+}
+
+.play-area.has-background .web-background { opacity: 1; }
+
+.play-area.has-background::before {
+  z-index: -3;
+  background: linear-gradient(115deg,rgba(255,249,234,.86) 0 43%,rgba(246,230,207,.72) 43% 100%);
+  backdrop-filter: blur(3px);
+}
+
 .instruction {
   position: absolute;
   left: 5vw;
@@ -50,4 +68,3 @@
     max-width: 430px;
   }
 }
-
