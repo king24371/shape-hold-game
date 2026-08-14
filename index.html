@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="???耦???啣偕撖貊閬箇?蝬脤??" />
+  <title>Shape Hold ??撠箏站????/title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="brand" href="./"><span>SHAPE</span> HOLD</a>
+      <div class="metric"><small>?桀??</small><strong id="score">0</strong></div>
+      <div class="metric round"><small>ROUND</small><strong><span id="round">01</span> <i>/ 8</i></strong></div>
+    </header>
+    <section class="play-area">
+      <div class="ambient one"></div><div class="ambient two"></div>
+      <div class="instruction">
+        <span class="eyebrow">SIZE SENSE GAME</span>
+        <h1 id="headline">??閬綽???憟賬?/h1>
+        <p id="description">瘥??格???靘?憭扼?雿?敶Ｚ?摰??瘀??冽??亥?憭????/p>
+      </div>
+      <div class="stage-wrap" id="gamePanel">
+        <div class="stage">
+          <div id="targetShape" class="shape-mark ghost circle"><span class="disc"></span></div>
+          <button id="holdZone" class="hold-zone ready" aria-label="??霈?敶Ｚ?憭改??暸?蝣箏?撠箏站">
+            <div id="playerShape" class="shape-mark asset circle"><img class="shape-image" alt="" draggable="false" /></div>
+          </button>
+          <div class="center-dot"></div>
+        </div>
+        <div id="statusCard" class="status-card ready">
+          <span class="pulse"></span><div><strong id="statusTitle">????</strong><small id="statusSub">皛?嚗孛?改???SPACE嚗NTER</small></div>
+        </div>
+      </div>
+      <div class="final-card" id="finalCard" hidden>
+        <span>FINAL SCORE</span><strong id="finalScore">0</strong>
+        <p id="finalCopy"></p><button id="restart">?銝撅 <b>??/b></button>
+      </div>
+    </section>
+    <footer><span>?拍車?耦 繚 憭望??喟?蝞?/span><span>?? 繚 ?曉之 繚 ?暸?</span></footer>
+  </main>
+  <script src="game-assets.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
+
