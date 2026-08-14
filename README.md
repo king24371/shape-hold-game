@@ -1,9 +1,16 @@
 # Shape Hold
 
-???耦霈??曉之嚗??亥??格?撠箏站??????芸??脣銝???憭望?蝡蝯???
-## ?湔?蝝?
+按住圖形讓它放大，在最接近目標尺寸時放開。成功會自動進入下一關；失敗立即結算。
 
-蝺刻摩 `game-assets.js`嚗?
-- `images.circle`嚗?敶Ｗ???- `images.doubleCircle`嚗?????- `audio.growingLoop`嚗?雿?敺芰?單?
-- `audio.success`嚗????- `audio.failure`嚗仃???
-???曉 `assets/`嚗P3 撱箄降?曉 `audio/`??
+## 更換素材
+
+編輯 `game-assets.js`：
+
+- `images.circle`：圓形圖片
+- `images.doubleCircle`：雙圓圖片
+- `audio.growingLoop`：按住時循環音效
+- `audio.success`：成功音效
+- `audio.failure`：失敗音效
+
+圖片放在 `assets/`，MP3 建議放在 `audio/`。
+
