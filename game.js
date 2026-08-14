@@ -4,30 +4,31 @@
   const $ = (id) => document.getElementById(id);
   const ui = { score:$("score"), round:$("round"), headline:$("headline"), description:$("description"), panel:$("gamePanel"), target:$("targetShape"), player:$("playerShape"), hold:$("holdZone"), card:$("statusCard"), title:$("statusTitle"), sub:$("statusSub"), final:$("finalCard"), finalScore:$("finalScore"), finalCopy:$("finalCopy"), restart:$("restart") };
   const assets = window.GAME_ASSETS;
-  const audio = {};
-  Object.entries(assets.audio).forEach(([key,path]) => { audio[key] = path ? new Audio(path) : null; });
-  if (audio.growingLoop) audio.growingLoop.loop = true;
-  let phase="ready", outcome=null, failureReason=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0;
+  const audio = { loop:null, success:assets.successSounds.map(path=>new Audio(path)), failure:assets.failureSound?new Audio(assets.failureSound):null };
+  let phase="ready", outcome=null, failureReason=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0, currentAsset=assets.circleVariants[0], lastCircle=-1;
 
-  function sound(name) { const a=audio[name]; if(!a)return; a.currentTime=0; a.play().catch(()=>{}); }
-  function stopLoop(){ cancelAnimationFrame(frame); frame=null; if(audio.growingLoop){audio.growingLoop.pause();audio.growingLoop.currentTime=0;} }
+  function sound(name) { const a=name==="success"?audio.success[Math.floor(Math.random()*audio.success.length)]:audio.failure; if(!a)return; a.currentTime=0; a.play().catch(()=>{}); }
+  function stopLoop(){ cancelAnimationFrame(frame); frame=null; if(audio.loop){audio.loop.pause();audio.loop.currentTime=0;} }
   function shapeMarkup(kind){ return kind==="circle" ? '<span class="disc"></span>' : '<span class="ring left"></span><span class="ring right"></span>'; }
-  function setShape(kind){
+  function setShape(kind, asset){
     ui.target.className=`shape-mark ghost ${kind}`; ui.target.innerHTML=shapeMarkup(kind);
     ui.player.className=`shape-mark asset ${kind}`;
-    ui.player.innerHTML=`<img class="shape-image" src="${kind==="circle"?assets.images.circle:assets.images.doubleCircle}" alt="" draggable="false">`;
+    ui.player.innerHTML=`<img class="shape-image" src="${asset.image}" alt="" draggable="false">`;
   }
   function transform(){ ui.player.style.transform=`translate(-50%,-50%) scale(${scale})`; ui.target.style.transform=`translate(-50%,-50%) scale(${target})`; }
   function status(title,sub,classes){ ui.title.textContent=title;ui.sub.textContent=sub;ui.card.className=`status-card ${classes}`; }
   function prepare(n){
     round=n; target=TARGETS[n-1]; scale=START; phase="ready"; outcome=null; failureReason=null;
     document.querySelector(".stage").classList.remove("exploding");
-    ui.round.textContent=String(n).padStart(2,"0"); setShape(n%2===0?"double":"circle"); transform();
+    const kind=n%2===0?"double":"circle";
+    if(kind==="double") currentAsset=assets.doubleCircle;
+    else { let index=Math.floor(Math.random()*assets.circleVariants.length); if(assets.circleVariants.length>1&&index===lastCircle)index=(index+1)%assets.circleVariants.length;lastCircle=index;currentAsset=assets.circleVariants[index]; }
+    ui.round.textContent=String(n).padStart(2,"0"); setShape(kind,currentAsset); transform();
     status("按住開始","滑鼠／觸控，或 SPACE／ENTER","ready"); ui.hold.disabled=false;
   }
   function begin(){
     if(phase!=="ready")return; phase="growing"; started=performance.now(); status("現在放開！","對準目標外框","growing");
-    if(audio.growingLoop){audio.growingLoop.currentTime=0;audio.growingLoop.play().catch(()=>{});}
+    if(audio.loop)audio.loop.pause();audio.loop=currentAsset.loop?new Audio(currentAsset.loop):null;if(audio.loop){audio.loop.loop=true;audio.loop.currentTime=0;audio.loop.play().catch(()=>{});}
     const tick=(now)=>{scale=START+(now-started)/1350;transform();if(scale>target*1.08){resolve("too-large");return;}frame=requestAnimationFrame(tick);};
     frame=requestAnimationFrame(tick);
   }
@@ -57,4 +58,3 @@
   addEventListener("keyup",e=>{if(e.code==="Space"||e.code==="Enter")release();});
   ui.restart.addEventListener("click",restart);prepare(1);
 })();
-
