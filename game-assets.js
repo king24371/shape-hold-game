@@ -2,7 +2,7 @@
 window.GAME_ASSETS = {
   background: {
     tag: "background",
-    apiUrl: "https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&json=1&limit=100"
+    apiUrl: "https://rule34-api.netlify.app/posts?limit=100&pid=0"
   },
   doubleCircle: { image: "assets/Boobs.png", loop: "audio/loop/oppai-loop.mp3" },
   circleVariants: [
