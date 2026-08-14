@@ -7,7 +7,7 @@
   const audio = {};
   Object.entries(assets.audio).forEach(([key,path]) => { audio[key] = path ? new Audio(path) : null; });
   if (audio.growingLoop) audio.growingLoop.loop = true;
-  let phase="ready", outcome=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0;
+  let phase="ready", outcome=null, failureReason=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0;
 
   function sound(name) { const a=audio[name]; if(!a)return; a.currentTime=0; a.play().catch(()=>{}); }
   function stopLoop(){ cancelAnimationFrame(frame); frame=null; if(audio.growingLoop){audio.growingLoop.pause();audio.growingLoop.currentTime=0;} }
@@ -20,26 +20,29 @@
   function transform(){ ui.player.style.transform=`translate(-50%,-50%) scale(${scale})`; ui.target.style.transform=`translate(-50%,-50%) scale(${target})`; }
   function status(title,sub,classes){ ui.title.textContent=title;ui.sub.textContent=sub;ui.card.className=`status-card ${classes}`; }
   function prepare(n){
-    round=n; target=TARGETS[n-1]; scale=START; phase="ready"; outcome=null;
+    round=n; target=TARGETS[n-1]; scale=START; phase="ready"; outcome=null; failureReason=null;
+    document.querySelector(".stage").classList.remove("exploding");
     ui.round.textContent=String(n).padStart(2,"0"); setShape(n%2===0?"double":"circle"); transform();
     status("按住開始","滑鼠／觸控，或 SPACE／ENTER","ready"); ui.hold.disabled=false;
   }
   function begin(){
     if(phase!=="ready")return; phase="growing"; started=performance.now(); status("現在放開！","對準目標外框","growing");
     if(audio.growingLoop){audio.growingLoop.currentTime=0;audio.growingLoop.play().catch(()=>{});}
-    const tick=(now)=>{scale=Math.min(1.9,START+(now-started)/1350);transform();if(scale<1.9)frame=requestAnimationFrame(tick);};
+    const tick=(now)=>{scale=START+(now-started)/1350;transform();if(scale>target*1.08){resolve("too-large");return;}frame=requestAnimationFrame(tick);};
     frame=requestAnimationFrame(tick);
   }
-  function release(){
+  function resolve(result){
     if(phase!=="growing")return; stopLoop(); phase="result";
     const accuracy=Math.max(0,Math.round((1-Math.abs(scale-target)/target)*100));
-    const success=scale>=target*.94&&scale<=target*1.08; outcome=success?"success":"failure";
+    const success=result==="success"; outcome=success?"success":"failure"; failureReason=success?null:result;
+    if(result==="too-large")document.querySelector(".stage").classList.add("exploding");
     const earned=success?(accuracy>=99?1500:accuracy>=96?1000:accuracy*8):0;
     if(success)score+=earned;ui.score.textContent=score.toLocaleString();ui.hold.disabled=true;
-    status(success?`漂亮！ ${accuracy}%`:`失敗 · ${accuracy}%`,success?`+${earned.toLocaleString()} · 自動進入下一關`:"正在結算成績",`result ${outcome}`);
+    status(success?`漂亮！ ${accuracy}%`:result==="too-large"?"太大了！爆炸！":"太小了！",success?`+${earned.toLocaleString()} · 自動進入下一關`:"正在結算成績",`result ${outcome}`);
     sound(success?"success":"failure");
     timer=setTimeout(()=>{if(!success||round>=TARGETS.length)finish();else prepare(round+1);},success?900:1200);
   }
+  function release(){if(phase!=="growing")return;resolve(scale<target*.94?"too-small":"success");}
   function finish(){
     phase="finished";ui.panel.hidden=true;ui.final.hidden=false;ui.finalScore.textContent=score.toLocaleString();
     const cleared=outcome==="failure"?round-1:round;
