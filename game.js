@@ -14,15 +14,20 @@
       const response=await fetch(`${config.apiUrl}&tags=${encodeURIComponent(config.tag)}`);
       if(!response.ok)throw new Error(`HTTP ${response.status}`);
       const posts=await response.json();
-      const candidates=posts.filter(post=>post.sample_url||post.file_url||post.preview_url);
+      const candidates=posts.filter(post=>post.sample_url||post.file_url||post.preview_url).sort(()=>Math.random()-.5);
       if(!candidates.length)return;
-      const post=candidates[Math.floor(Math.random()*candidates.length)];
-      ui.background.style.backgroundImage=`url("${post.sample_url||post.file_url||post.preview_url}")`;
-      ui.background.closest(".play-area").classList.add("has-background");
+      for(const post of candidates.slice(0,12)){
+        const urls=[post.sample_url,post.file_url,post.preview_url].filter(url=>url&&/\.(?:jpe?g|png|webp|gif)(?:\?|$)/i.test(url));
+        for(const url of urls){
+          const loaded=await new Promise(resolve=>{const image=new Image();image.referrerPolicy="no-referrer";image.onload=()=>resolve(image.naturalWidth>0&&image.naturalHeight>0);image.onerror=()=>resolve(false);image.src=url;});
+          if(loaded){ui.background.style.backgroundImage=`url("${url}")`;ui.background.closest(".play-area").classList.add("has-background");return;}
+        }
+      }
+      console.warn("本批背景圖片皆無法載入，保留目前背景。");
     }catch(error){console.warn("背景圖片載入失敗，使用預設背景。",error);}
   }
   function stopLoop(){ cancelAnimationFrame(frame); frame=null; if(audio.loop){audio.loop.pause();audio.loop.currentTime=0;} }
-  function shapeMarkup(kind){ return kind==="circle" ? '<span class="disc"></span>' : '<span class="ring left"></span><span class="ring right"></span>'; }
+  function shapeMarkup(kind){ return kind==="circle" ? '<span class="disc"></span>' : `<img class="shape-image outline-image" src="${assets.doubleCircle.outline}" alt="" draggable="false">`; }
   function setShape(kind, asset){
     ui.target.className=`shape-mark ghost ${kind}`; ui.target.innerHTML=shapeMarkup(kind);
     ui.player.className=`shape-mark asset ${kind}`;

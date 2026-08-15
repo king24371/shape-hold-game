@@ -26,6 +26,16 @@
 
 .stage::before { display: none; }
 
+.shape-mark.double,
+.shape-mark.asset.double,
+.shape-mark.ghost.double {
+  width: 350px;
+  height: 350px;
+}
+
+.ghost.double { opacity: .86; }
+.ghost .outline-image { mix-blend-mode: normal; }
+
 .instruction {
   position: absolute;
   left: 5vw;

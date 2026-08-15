@@ -4,7 +4,7 @@ window.GAME_ASSETS = {
     tag: "background",
     apiUrl: "https://rule34-api.netlify.app/posts?limit=100&pid=0"
   },
-  doubleCircle: { image: "assets/Boobs.png", loop: "audio/loop/oppai-loop.mp3" },
+  doubleCircle: { image: "assets/Boobs.png", outline: "assets/Boobs_white_outline.png", loop: "audio/loop/oppai-loop.mp3" },
   circleVariants: [
     { id: "boob", image: "assets/Circle/Boob.png", loop: "audio/loop/oppai-loop.mp3" },
     { id: "clit", image: "assets/Circle/Clit.png", loop: "audio/loop/kuri-loop.mp3" },
