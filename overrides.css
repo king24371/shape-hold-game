@@ -8,18 +8,23 @@
   inset: 0;
   z-index: -4;
   background-position: center;
-  background-size: cover;
+  background-color: var(--cream);
+  background-size: auto 100%;
+  background-repeat: no-repeat;
   opacity: 0;
   transition: opacity .45s ease;
 }
 
 .play-area.has-background .web-background { opacity: 1; }
 
+.play-area::before,
 .play-area.has-background::before {
   z-index: -3;
-  background: linear-gradient(115deg,rgba(255,249,234,.86) 0 43%,rgba(246,230,207,.72) 43% 100%);
-  backdrop-filter: blur(3px);
+  background: rgba(255,248,233,.34);
+  backdrop-filter: none;
 }
+
+.stage::before { display: none; }
 
 .instruction {
   position: absolute;
