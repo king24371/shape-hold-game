@@ -5,7 +5,7 @@
   const ui = { score:$("score"), round:$("round"), headline:$("headline"), description:$("description"), panel:$("gamePanel"), target:$("targetShape"), player:$("playerShape"), hold:$("holdZone"), card:$("statusCard"), title:$("statusTitle"), sub:$("statusSub"), final:$("finalCard"), finalScore:$("finalScore"), finalCopy:$("finalCopy"), restart:$("restart"), background:$("webBackground") };
   const assets = window.GAME_ASSETS;
   const audio = { loop:null, success:assets.successSounds.map(path=>new Audio(path)), failure:assets.failureSound?new Audio(assets.failureSound):null };
-  let phase="ready", outcome=null, failureReason=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0, currentAsset=assets.circleVariants[0], lastCircle=-1;
+  let phase="ready", outcome=null, failureReason=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0, currentAsset=assets.circleVariants[0], lastCircle=-1, lastTarget=-1;
 
   function sound(name) { const a=name==="success"?audio.success[Math.floor(Math.random()*audio.success.length)]:audio.failure; if(!a)return; a.currentTime=0; a.play().catch(()=>{}); }
   async function loadBackground(){
@@ -31,9 +31,10 @@
   function transform(){ ui.player.style.transform=`translate(-50%,-50%) scale(${scale})`; ui.target.style.transform=`translate(-50%,-50%) scale(${target})`; }
   function status(title,sub,classes){ ui.title.textContent=title;ui.sub.textContent=sub;ui.card.className=`status-card ${classes}`; }
   function prepare(n){
-    round=n; target=TARGETS[n-1]; scale=START; phase="ready"; outcome=null; failureReason=null;
+    let targetIndex=Math.floor(Math.random()*TARGETS.length);if(TARGETS.length>1&&targetIndex===lastTarget)targetIndex=(targetIndex+1)%TARGETS.length;lastTarget=targetIndex;
+    round=n; target=TARGETS[targetIndex]; scale=START; phase="ready"; outcome=null; failureReason=null;
     document.querySelector(".stage").classList.remove("exploding");
-    const kind=n%2===0?"double":"circle";
+    const kind=Math.random()<.5?"double":"circle";
     if(kind==="double") currentAsset=assets.doubleCircle;
     else { let index=Math.floor(Math.random()*assets.circleVariants.length); if(assets.circleVariants.length>1&&index===lastCircle)index=(index+1)%assets.circleVariants.length;lastCircle=index;currentAsset=assets.circleVariants[index]; }
     ui.round.textContent=String(n).padStart(2,"0"); setShape(kind,currentAsset); transform();
@@ -54,17 +55,17 @@
     if(success)score+=earned;ui.score.textContent=score.toLocaleString();ui.hold.disabled=true;
     status(success?`漂亮！ ${accuracy}%`:result==="too-large"?"太大了！爆炸！":"太小了！",success?`+${earned.toLocaleString()} · 自動進入下一關`:"正在結算成績",`result ${outcome}`);
     sound(success?"success":"failure");
-    timer=setTimeout(()=>{if(!success||round>=TARGETS.length)finish();else prepare(round+1);},success?900:1200);
+    timer=setTimeout(()=>{if(!success)finish();else prepare(round+1);},success?900:1200);
   }
   function release(){if(phase!=="growing")return;resolve(scale<target*.94?"too-small":"success");}
   function finish(){
     phase="finished";ui.panel.hidden=true;ui.final.hidden=false;ui.finalScore.textContent=score.toLocaleString();
     const cleared=outcome==="failure"?round-1:round;
-    ui.headline.textContent=outcome==="failure"?"挑戰結束。":"全部過關！";
-    ui.description.textContent=`你完成了 ${cleared} 個逐漸放大的目標。`;
-    ui.finalCopy.textContent=outcome==="failure"?`止步第 ${round} 關，共完成 ${cleared} 關。`:"八個逐漸放大的圖形，全數完成。";
+    ui.headline.textContent="挑戰結束。";
+    ui.description.textContent=`你完成了 ${cleared} 個隨機目標。`;
+    ui.finalCopy.textContent=`止步第 ${round} 關，共完成 ${cleared} 關。`;
   }
-  function restart(){stopLoop();clearTimeout(timer);score=0;ui.score.textContent="0";ui.panel.hidden=false;ui.final.hidden=true;ui.headline.textContent="憑感覺，剛剛好。";ui.description.textContent="每關目標會越來越大。按住圖形讓它成長，在最接近外框時放開。";loadBackground();prepare(1);}
+  function restart(){stopLoop();clearTimeout(timer);score=0;ui.score.textContent="0";ui.panel.hidden=false;ui.final.hidden=true;ui.headline.textContent="憑感覺，剛剛好。";ui.description.textContent="每回合的圖形與目標尺寸都會隨機變化。按住圖形，在最接近外框時放開。";loadBackground();prepare(1);}
   ui.hold.addEventListener("pointerdown",e=>{ui.hold.setPointerCapture(e.pointerId);begin();});
   ui.hold.addEventListener("pointerup",release);ui.hold.addEventListener("pointercancel",release);
   addEventListener("keydown",e=>{if((e.code==="Space"||e.code==="Enter")&&!e.repeat){e.preventDefault();begin();}});
