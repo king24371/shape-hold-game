@@ -5,7 +5,7 @@
   const ui = { score:$("score"), round:$("round"), headline:$("headline"), description:$("description"), panel:$("gamePanel"), target:$("targetShape"), player:$("playerShape"), hold:$("holdZone"), card:$("statusCard"), title:$("statusTitle"), sub:$("statusSub"), final:$("finalCard"), finalScore:$("finalScore"), finalCopy:$("finalCopy"), restart:$("restart"), background:$("webBackground") };
   const assets = window.GAME_ASSETS;
   const audio = { loop:null, success:assets.successSounds.map(path=>new Audio(path)), failure:assets.failureSound?new Audio(assets.failureSound):null };
-  let phase="ready", outcome=null, failureReason=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0, currentAsset=assets.circleVariants[0], lastCircle=-1, lastTarget=-1;
+  let phase="ready", outcome=null, failureReason=null, round=1, score=0, scale=START, target=TARGETS[0], frame=null, timer=null, started=0, currentAsset=assets.circleVariants[0], lastCircle=-1;
 
   function sound(name) { const a=name==="success"?audio.success[Math.floor(Math.random()*audio.success.length)]:audio.failure; if(!a)return; a.currentTime=0; a.play().catch(()=>{}); }
   async function loadBackground(){
@@ -36,8 +36,7 @@
   function transform(){ ui.player.style.transform=`translate(-50%,-50%) scale(${scale})`; ui.target.style.transform=`translate(-50%,-50%) scale(${target})`; }
   function status(title,sub,classes){ ui.title.textContent=title;ui.sub.textContent=sub;ui.card.className=`status-card ${classes}`; }
   function prepare(n){
-    let targetIndex=Math.floor(Math.random()*TARGETS.length);if(TARGETS.length>1&&targetIndex===lastTarget)targetIndex=(targetIndex+1)%TARGETS.length;lastTarget=targetIndex;
-    round=n; target=TARGETS[targetIndex]; scale=START; phase="ready"; outcome=null; failureReason=null;
+    round=n; target=TARGETS[Math.min(n-1,TARGETS.length-1)]; scale=START; phase="ready"; outcome=null; failureReason=null;
     document.querySelector(".stage").classList.remove("exploding");
     const kind=Math.random()<.5?"double":"circle";
     if(kind==="double") currentAsset=assets.doubleCircle;
@@ -48,7 +47,7 @@
   function begin(){
     if(phase!=="ready")return; phase="growing"; started=performance.now(); status("現在放開！","對準目標外框","growing");
     if(audio.loop)audio.loop.pause();audio.loop=currentAsset.loop?new Audio(currentAsset.loop):null;if(audio.loop){audio.loop.loop=true;audio.loop.currentTime=0;audio.loop.play().catch(()=>{});}
-    const tick=(now)=>{scale=START+(now-started)/1350;transform();if(scale>target*1.08){resolve("too-large");return;}frame=requestAnimationFrame(tick);};
+    const tick=(now)=>{scale=START+(now-started)/1650;transform();if(scale>target*1.08){resolve("too-large");return;}frame=requestAnimationFrame(tick);};
     frame=requestAnimationFrame(tick);
   }
   function resolve(result){
@@ -67,10 +66,10 @@
     phase="finished";ui.panel.hidden=true;ui.final.hidden=false;ui.finalScore.textContent=score.toLocaleString();
     const cleared=outcome==="failure"?round-1:round;
     ui.headline.textContent="挑戰結束。";
-    ui.description.textContent=`你完成了 ${cleared} 個隨機目標。`;
+    ui.description.textContent=`你完成了 ${cleared} 個目標。`;
     ui.finalCopy.textContent=`止步第 ${round} 關，共完成 ${cleared} 關。`;
   }
-  function restart(){stopLoop();clearTimeout(timer);score=0;ui.score.textContent="0";ui.panel.hidden=false;ui.final.hidden=true;ui.headline.textContent="憑感覺，剛剛好。";ui.description.textContent="每回合的圖形與目標尺寸都會隨機變化。按住圖形，在最接近外框時放開。";loadBackground();prepare(1);}
+  function restart(){stopLoop();clearTimeout(timer);score=0;ui.score.textContent="0";ui.panel.hidden=false;ui.final.hidden=true;ui.headline.textContent="憑感覺，剛剛好。";ui.description.textContent="單圓與雙圓會隨機出現，目標尺寸則隨回合逐步增大。按住圖形，在最接近外框時放開。";loadBackground();prepare(1);}
   ui.hold.addEventListener("pointerdown",e=>{ui.hold.setPointerCapture(e.pointerId);begin();});
   ui.hold.addEventListener("pointerup",release);ui.hold.addEventListener("pointercancel",release);
   addEventListener("keydown",e=>{if((e.code==="Space"||e.code==="Enter")&&!e.repeat){e.preventDefault();begin();}});

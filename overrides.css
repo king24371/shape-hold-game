@@ -20,7 +20,7 @@
 .play-area::before,
 .play-area.has-background::before {
   z-index: -3;
-  background: rgba(255,248,233,.34);
+  background: rgba(255,248,233,.85);
   backdrop-filter: none;
 }
 
